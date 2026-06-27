@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Little Heroes Adventure - A Kids D&D Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="bg-canvas"></canvas>
+        <canvas id="particles-canvas"></canvas>
+        <div id="screen-flash"></div>
+        <div id="low-hp-vignette"></div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <div class="stars" id="stars-container"></div>
+            <div class="game-title">⚔️ Little Heroes ⚔️</div>
+            <div class="game-subtitle">A Dungeon Adventure for Young Heroes!</div>
+
+            <div class="name-input-area">
+                <label>Hero Name:</label>
+                <input type="text" id="hero-name-input" placeholder="Enter name..." maxlength="12" value="">
+            </div>
+
+            <div class="hero-select" id="hero-select">
+                <div class="hero-card" data-hero="knight" onclick="selectHero('knight')">
+                    <div class="hero-icon">🗡️</div>
+                    <div class="hero-name">Knight</div>
+                    <div class="hero-desc">Strong & Brave!</div>
+                    <div class="hero-stats-preview">❤️16 ⚔️5 🛡️5</div>
+                    <div class="hero-ability">🔥 Power Strike</div>
+                </div>
+                <div class="hero-card" data-hero="wizard" onclick="selectHero('wizard')">
+                    <div class="hero-icon">🧙</div>
+                    <div class="hero-name">Wizard</div>
+                    <div class="hero-desc">Magical Power!</div>
+                    <div class="hero-stats-preview">❤️11 ⚔️3 ✨7</div>
+                    <div class="hero-ability">⚡ Chain Lightning</div>
+                </div>
+                <div class="hero-card" data-hero="archer" onclick="selectHero('archer')">
+                    <div class="hero-icon">🏹</div>
+                    <div class="hero-name">Ranger</div>
+                    <div class="hero-desc">Quick & Agile!</div>
+                    <div class="hero-stats-preview">❤️13 ⚔️4 💨6</div>
+                    <div class="hero-ability">🎯 Precision Shot</div>
+                </div>
+                <div class="hero-card" data-hero="healer" onclick="selectHero('healer')">
+                    <div class="hero-icon">🧝</div>
+                    <div class="hero-name">Druid</div>
+                    <div class="hero-desc">Nature's Guardian!</div>
+                    <div class="hero-stats-preview">❤️14 ⚔️3 💚6</div>
+                    <div class="hero-ability">🌿 Nature's Blessing</div>
+                </div>
+            </div>
+
+            <div class="difficulty-select">
+                <button class="diff-btn selected" onclick="selectDifficulty('easy', this)">🌟 Easy</button>
+                <button class="diff-btn" onclick="selectDifficulty('normal', this)">⚔️ Normal</button>
+                <button class="diff-btn" onclick="selectDifficulty('hard', this)">💀 Hard</button>
+            </div>
+
+            <button class="start-btn" id="start-btn" onclick="startGame()" disabled>Choose a Hero!</button>
+            <button class="start-btn continue-btn" id="continue-btn" onclick="continueGame()"
+                style="display:none;margin-top:10px;font-size:1.1rem;padding:12px 35px;
+                background:linear-gradient(180deg,#27ae60,#1e8449);
+                box-shadow:0 6px 0 #145a32,0 0 20px rgba(39,174,96,0.2)">
+                💾 Continue
+            </button>
+
+            <div class="start-bottom-btns">
+                <button class="start-small-btn" onclick="toggleHelp()">❓ How to Play</button>
+                <button class="start-small-btn" onclick="toggleHighScores()">🏆 High Scores</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen">
+            <div class="trophy-icon" id="trophy-icon">🏆</div>
+            <div class="game-over-title" id="game-over-title">Victory!</div>
+            <div class="final-score" id="final-score">Score: 0</div>
+            <div class="achievements-row" id="go-achievements"></div>
+            <div class="final-stats" id="final-stats"></div>
+            <button class="start-btn" onclick="restartGame()">🔄 Play Again!</button>
+        </div>
+
+        <!-- Top Bar -->
+        <div id="top-bar">
+            <div class="player-info">
+                <div class="player-avatar" id="player-avatar">
+                    🗡️<span class="level-badge" id="level-badge">1</span>
+                </div>
+                <div class="player-stats">
+                    <div class="player-name" id="player-name">Hero</div>
+                    <div class="player-level" id="player-level">Level 1</div>
+                    <div class="hp-bar-container">
+                        <div class="hp-bar" id="hp-bar" style="width:100%"></div>
+                    </div>
+                    <div class="hp-text" id="hp-text">HP: 15/15</div>
+                    <div class="xp-bar-container">
+                        <div class="xp-bar" id="xp-bar" style="width:0%"></div>
+                    </div>
+                    <div class="mp-bar-container">
+                        <div class="mp-bar" id="mp-bar" style="width:100%"></div>
+                    </div>
+                    <div class="status-row" id="status-row"></div>
+                </div>
+            </div>
+
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">💰</span>
+                    <span class="stat-value" id="gold-display">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🗝️</span>
+                    <span class="stat-value" id="keys-display">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🏰</span>
+                    <span class="stat-value" id="floor-display">1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">💀</span>
+                    <span class="stat-value" id="kills-display">0</span>
+                </div>
+            </div>
+
+            <div class="toolbar-btns">
+                <button class="tool-btn" id="sound-toggle" onclick="toggleSound()" title="Mute Sound">🔊</button>
+                <button class="tool-btn" onclick="togglePause()" title="Pause (ESC)">⏸️</button>
+                <button class="tool-btn" onclick="toggleHelp()" title="Help">❓</button>
+                <button class="tool-btn" onclick="toggleHighScores()" title="High Scores">🏆</button>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div id="game-area">
+            <div id="map-panel">
+                <div class="map-title">
+                    <span>🗺️ Dungeon Map</span>
+                    <span class="floor-badge" id="floor-badge">Floor 1</span>
+                </div>
+                <div class="map-subtitle" id="map-subtitle">The Dusty Cellars</div>
+                <div id="dungeon-map"></div>
+            </div>
+
+            <div id="side-panel">
+                <div class="panel-section">
+                    <div class="panel-title">📊 Stats</div>
+                    <div class="stats-grid" id="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">ATK</div>
+                            <div class="stat-val" id="stat-atk">5</div>
+                            <div class="stat-bonus" id="stat-atk-bonus"></div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">DEF</div>
+                            <div class="stat-val" id="stat-def">3</div>
+                            <div class="stat-bonus" id="stat-def-bonus"></div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">MAG</div>
+                            <div class="stat-val" id="stat-mag">2</div>
+                            <div class="stat-bonus" id="stat-mag-bonus"></div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">SPD</div>
+                            <div class="stat-val" id="stat-spd">3</div>
+                            <div class="stat-bonus" id="stat-spd-bonus"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">🎒 Inventory</div>
+                    <div class="inventory-grid" id="inventory-grid"></div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">⚡ Quick Actions</div>
+                    <div class="mini-actions">
+                        <button class="mini-btn use-potion" id="use-potion-btn" onclick="usePotion()" disabled>
+                            🧪 Use Potion (0)
+                        </button>
+                        <button class="mini-btn use-antidote" id="use-antidote-btn" onclick="useAntidote()" disabled>
+                            🌿 Antidote (0)
+                        </button>
+                        <button class="mini-btn auto-explore" id="auto-explore-btn" onclick="autoExplore()">
+                            🧭 Auto-Explore
+                        </button>
+                    </div>
+                    <div class="controls-hint">
+                        WASD / Arrow Keys to move<br>
+                        Click ANY visible tile to walk there<br>
+                        E = Auto-Explore • P = Potion • Q = Antidote<br>
+                        ESC = Pause
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-title">📜 Adventure Log</div>
+                    <div class="story-log" id="story-log"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Minimap -->
+        <div id="minimap-container">
+            <div class="minimap-title">MAP</div>
+            <canvas id="minimap-canvas" width="80" height="60"></canvas>
+        </div>
+
+        <!-- Combat Area -->
+        <div id="combat-area">
+            <div class="combat-title">⚔️ BATTLE! ⚔️</div>
+            <div class="combo-display" id="combo-display"></div>
+            <div class="turn-indicator" id="turn-indicator">Your Turn</div>
+            <div class="combat-scene">
+                <div class="combat-entity">
+                    <div class="combat-avatar" id="combat-player-avatar">🗡️</div>
+                    <div class="combat-name" id="combat-player-name">Hero</div>
+                    <div class="combat-hp-bar">
+                        <div class="combat-hp-fill player-hp" id="combat-player-hp" style="width:100%"></div>
+                    </div>
+                    <div class="combat-hp-text" id="combat-player-hp-text">15/15</div>
+                </div>
+                <div class="vs-text">VS</div>
+                <div class="combat-entity">
+                    <div class="combat-avatar" id="combat-enemy-avatar">👹</div>
+                    <div class="combat-name" id="combat-enemy-name">Monster</div>
+                    <div class="combat-hp-bar">
+                        <div class="combat-hp-fill enemy-hp" id="combat-enemy-hp" style="width:100%"></div>
+                    </div>
+                    <div class="combat-hp-text" id="combat-enemy-hp-text">10/10</div>
+                    <div class="enemy-status-row" id="enemy-status"></div>
+                </div>
+            </div>
+            <div class="dice-display" id="dice-display"></div>
+            <div class="combat-actions" id="combat-actions">
+                <button class="combat-btn attack" onclick="combatAction('attack')">
+                    ⚔️ Attack
+                    <span class="btn-tooltip">Roll d20 to hit with weapon</span>
+                </button>
+                <button class="combat-btn magic" onclick="combatAction('magic')">
+                    ✨ Magic
+                    <span class="btn-tooltip">Cast a spell (costs MP)</span>
+                </button>
+                <button class="combat-btn defend" onclick="combatAction('defend')">
+                    🛡️ Defend
+                    <span class="btn-tooltip">+50% DEF this turn</span>
+                </button>
+                <button class="combat-btn heal" onclick="combatAction('heal')">
+                    💚 Heal
+                    <span class="btn-tooltip">Restore HP</span>
+                </button>
+                <button class="combat-btn item-btn" onclick="combatAction('item')">
+                    🧪 Item
+                    <span class="btn-tooltip">Use scroll, bomb or potion</span>
+                </button>
+                <button class="combat-btn flee" onclick="combatAction('flee')">
+                    🏃 Flee
+                    <span class="btn-tooltip">Try to escape (SPD helps)</span>
+                </button>
+            </div>
+            <div class="combat-log" id="combat-log"></div>
+        </div>
+
+        <!-- Shop Overlay -->
+        <div id="shop-overlay">
+            <div class="shop-title">🏪 Wandering Merchant</div>
+            <div class="shop-subtitle">"See anything you like, hero?"</div>
+            <div class="shop-gold-display" id="shop-gold">💰 Your Gold: 0</div>
+            <div class="shop-items" id="shop-items"></div>
+            <button class="shop-close-btn" onclick="closeShop()">👋 Leave Shop</button>
+        </div>
+
+        <!-- Event Popup -->
+        <div class="event-popup" id="event-popup">
+            <div class="event-icon" id="event-icon">📦</div>
+            <div class="event-title" id="event-title">Event</div>
+            <div class="event-desc" id="event-desc">Something happened!</div>
+            <div id="event-buttons"></div>
+        </div>
+
+        <!-- Level Up Overlay -->
+        <div class="level-up-overlay" id="level-up-overlay">
+            <div class="level-up-card">
+                <div class="lu-icon">⬆️</div>
+                <div class="lu-title" id="lu-title">Level Up!</div>
+                <div class="lu-desc" id="lu-desc">You reached level 2!</div>
+                <div class="lu-stats" id="lu-stats"></div>
+                <button class="event-btn primary" onclick="closeLevelUp()">Awesome! ✨</button>
+            </div>
+        </div>
+
+        <!-- Achievement Toast -->
+        <div class="achievement-toast" id="achievement-toast">
+            <div class="ach-toast-icon" id="ach-toast-icon">🏆</div>
+            <div>
+                <div class="ach-toast-name" id="ach-toast-name">Achievement!</div>
+                <div class="ach-toast-desc" id="ach-toast-desc">You did something cool!</div>
+            </div>
+        </div>
+
+        <!-- Mobile Bottom Bar -->
+        <div class="mobile-bottom-bar" id="mobile-bottom-bar">
+            <button class="mob-btn" id="mob-potion-btn" onclick="usePotion()">🧪 Potion</button>
+            <button class="mob-btn" id="mob-antidote-btn" onclick="useAntidote()">🌿 Cure</button>
+            <button class="mob-btn" onclick="autoExplore()">🧭 Explore</button>
+            <button class="mob-btn" onclick="togglePause()">⏸️ Pause</button>
+        </div>
+
+        <!-- Floor Transition -->
+        <div id="floor-transition">
+            <div class="ft-content">
+                <div class="ft-floor">Floor 2</div>
+                <div class="ft-text">Shadowy Catacombs</div>
+            </div>
+        </div>
+
+        <!-- Pause Overlay -->
+        <div id="pause-overlay">
+            <div class="pause-card">
+                <div class="pause-icon">⏸️</div>
+                <div class="pause-title">Paused</div>
+                <div class="pause-subtitle">Game saved automatically</div>
+                <button class="event-btn primary" onclick="togglePause()">▶️ Resume</button>
+                <button class="event-btn secondary"
+                    style="margin-top:8px"
+                    onclick="togglePause();restartGame()">
+                    🚪 Quit to Menu
+                </button>
+            </div>
+        </div>
+
+        <!-- Help Overlay -->
+        <div id="help-overlay">
+            <div class="help-card">
+                <div class="help-title">❓ How to Play</div>
+                <div class="help-body">
+                    <div class="help-section">
+                        <b>🗺️ Movement</b><br>
+                        • Click any visible tile to walk there<br>
+                        • WASD or Arrow Keys for step-by-step<br>
+                        • E = Auto-Explore &nbsp; P = Potion &nbsp; Q = Antidote
+                    </div>
+                    <div class="help-section">
+                        <b>⚔️ Combat</b><br>
+                        • Roll a d20 to attack — higher is better!<br>
+                        • Nat 20 = Critical Hit &nbsp; Nat 1 = Critical Miss<br>
+                        • Defend blocks 50% of incoming damage<br>
+                        • Each hero has a unique ability that costs MP
+                    </div>
+                    <div class="help-section">
+                        <b>🎒 Items</b><br>
+                        • 🧪 Potions heal HP &nbsp; 📜 Scrolls deal magic damage<br>
+                        • 💣 Bombs deal heavy damage &nbsp; 🌿 Antidotes cure status<br>
+                        • ⚔️🛡️💍👢 Equipment boosts stats permanently
+                    </div>
+                    <div class="help-section">
+                        <b>🗺️ Map Legend</b><br>
+                        • 📦 Treasure &nbsp; 💚 Healing Spring &nbsp; 🏪 Shop<br>
+                        • 💬 NPC &nbsp; ❓ Secret Room &nbsp; ✨ Random Event<br>
+                        • 🚪 Exit to next floor &nbsp; 👑 Boss monster
+                    </div>
+                    <div class="help-section">
+                        <b>🏰 Goal</b><br>
+                        • Explore 5 floors and defeat all bosses!<br>
+                        • Reach the 🚪 exit on each floor to descend<br>
+                        • ESC = Pause &nbsp; Game saves automatically
+                    </div>
+                </div>
+                <button class="event-btn primary" onclick="toggleHelp()">Got it! ✨</button>
+            </div>
+        </div>
+
+        <!-- High Scores Panel -->
+        <div id="hs-panel">
+            <div class="hs-card">
+                <div class="hs-title">🏆 High Scores</div>
+                <div class="hs-list" id="hs-list"></div>
+                <div class="hs-buttons">
+                    <button class="event-btn primary" onclick="toggleHighScores()">Close</button>
+                    <button class="event-btn secondary"
+                        onclick="if(confirm('Clear all scores?')){HighScores.clear();renderHighScores();}">
+                        🗑️ Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end #game-container -->
+
+    <script src="game.js"></script>
+</body>
+</html>
